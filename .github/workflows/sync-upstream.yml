@@ -1,0 +1,29 @@
+name: Sync upstream
+
+# flytoex/everything is a fork of HeyPuter/everything. `main` mirrors the
+# upstream main and is never committed to directly; this brings it up to
+# date every night (03:17 Beijing time) and on demand. Our own changes live
+# on `flyto`, the default branch, which is where a scheduled workflow has to
+# be, and take upstream in by merging `main`.
+#
+# If upstream changed a file under .github/workflows, GitHub refuses the
+# update to this workflow's token. Sync by hand then, with an account that
+# may push workflows:
+#   gh repo sync flytoex/everything -b main
+
+on:
+  schedule:
+    - cron: '17 19 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fast-forward main to upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${{ github.repository }}/merge-upstream" -f branch=main
